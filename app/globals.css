@@ -60,6 +60,31 @@
 }
 
 @layer components {
+  .app-shell {
+    font-family:
+      "Avenir Next",
+      "SF Pro Text",
+      "Segoe UI",
+      "Inter",
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    letter-spacing: -0.008em;
+  }
+
+  .app-shell .display-copy {
+    font-family:
+      "Avenir Next",
+      "SF Pro Display",
+      "Segoe UI",
+      "Inter",
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    font-weight: 560;
+    letter-spacing: -0.022em;
+  }
+
   .surface-panel {
     @apply rounded-2xl border border-border/10 shadow-panel;
     background-color: rgb(var(--surface) / 0.92);

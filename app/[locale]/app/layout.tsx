@@ -24,6 +24,7 @@ export default async function ProductAppLayout({
 
   return (
     <SolanaWalletProvider>
+      <div className="app-shell flex min-h-full flex-col">
       <AppTopbar locale={locale} dictionary={dictionary.common} nav={dictionary.app.nav} />
       <main
         id="content"
@@ -31,6 +32,7 @@ export default async function ProductAppLayout({
       >
         {children}
       </main>
+      </div>
     </SolanaWalletProvider>
   );
 }

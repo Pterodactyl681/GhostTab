@@ -161,7 +161,7 @@ export function SessionsInboxOutbox({
   const normalizedWallet = normalizeWallet(publicKey);
 
   const filteredSessions = useMemo(() => {
-    if (!normalizedWallet) return sessions;
+    if (!normalizedWallet) return [];
 
     return sessions.filter((session) => {
       const sender = normalizeWallet(session.runtime?.senderWallet);
