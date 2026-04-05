@@ -44,7 +44,7 @@ export default async function AppTabPage({ params }: AppTabPageProps) {
   const dictionary = await getDictionary(safeLocale);
   const app = dictionary.app;
   const ghostTabService = getGhostTabService();
-  const session = ghostTabService.getSessionById(id);
+  const session = await ghostTabService.getSessionById(id);
 
   if (!session) {
     notFound();

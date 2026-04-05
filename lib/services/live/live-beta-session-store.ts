@@ -20,10 +20,24 @@ type PersistedLiveSessionStore = {
 declare global {
   // eslint-disable-next-line no-var
   var __ghostTabLiveSessionStore: LiveSessionStore | undefined;
+  // eslint-disable-next-line no-var
+  var __ghostTabLiveSessionStoreLoaded: boolean | undefined;
 }
 
 const STORE_DIR = path.join(process.cwd(), "data");
 const STORE_FILE = path.join(STORE_DIR, "live-beta-sessions.json");
+
+const KV_KEY = "ghosttab:live-beta-sessions:v1";
+
+function kvConfig() {
+  const url = process.env.KV_REST_API_URL?.trim();
+  const token = process.env.KV_REST_API_TOKEN?.trim();
+  if (!url || !token) return null;
+  return {
+    url: url.replace(/\/+$/, ""),
+    token,
+  };
+}
 
 function toDate(value: unknown): Date | null {
   if (value instanceof Date) return Number.isFinite(value.getTime()) ? value : null;
@@ -159,21 +173,22 @@ function serializeSession(session: GhostTabSession): Record<string, unknown> {
   };
 }
 
-function loadPersistedStore(): LiveSessionStore {
+function emptyStore(): LiveSessionStore {
+  return {
+    byId: new Map<string, GhostTabSession>(),
+    order: [],
+  };
+}
+
+function loadPersistedStoreFromFile(): LiveSessionStore {
   try {
     if (!fs.existsSync(STORE_FILE)) {
-      return {
-        byId: new Map<string, GhostTabSession>(),
-        order: [],
-      };
+      return emptyStore();
     }
 
     const raw = fs.readFileSync(STORE_FILE, "utf8");
     if (!raw.trim()) {
-      return {
-        byId: new Map<string, GhostTabSession>(),
-        order: [],
-      };
+      return emptyStore();
     }
 
     const parsed = JSON.parse(raw) as PersistedLiveSessionStore;
@@ -201,37 +216,111 @@ function loadPersistedStore(): LiveSessionStore {
 
     return { byId, order };
   } catch {
-    return {
-      byId: new Map<string, GhostTabSession>(),
-      order: [],
-    };
+    return emptyStore();
   }
 }
 
-function persistStore(store: LiveSessionStore) {
+function toPersistedPayload(store: LiveSessionStore): PersistedLiveSessionStore {
+  return {
+    order: [...store.order],
+    sessions: store.order
+      .map((id) => store.byId.get(id))
+      .filter((session): session is GhostTabSession => Boolean(session))
+      .map((session) => serializeSession(session)),
+  };
+}
+
+function parsePersistedPayload(rawJson: string): LiveSessionStore {
+  try {
+    const parsed = JSON.parse(rawJson) as PersistedLiveSessionStore;
+    const byId = new Map<string, GhostTabSession>();
+    const sessionsRaw = Array.isArray(parsed.sessions) ? parsed.sessions : [];
+    for (const row of sessionsRaw) {
+      if (!row || typeof row !== "object" || Array.isArray(row)) continue;
+      const session = deserializeSession(row as Record<string, unknown>);
+      if (session) byId.set(session.id, session);
+    }
+    const orderRaw = Array.isArray(parsed.order) ? parsed.order : [];
+    const order = orderRaw
+      .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      .filter((id, index, values) => values.indexOf(id) === index)
+      .filter((id) => byId.has(id));
+    for (const id of byId.keys()) {
+      if (!order.includes(id)) order.push(id);
+    }
+    return { byId, order };
+  } catch {
+    return emptyStore();
+  }
+}
+
+async function loadPersistedStoreFromKv(): Promise<LiveSessionStore | null> {
+  const cfg = kvConfig();
+  if (!cfg) return null;
+
+  try {
+    const response = await fetch(`${cfg.url}/get/${encodeURIComponent(KV_KEY)}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${cfg.token}`,
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as { result?: unknown };
+    if (typeof payload.result !== "string" || payload.result.length === 0) {
+      return emptyStore();
+    }
+    return parsePersistedPayload(payload.result);
+  } catch {
+    return null;
+  }
+}
+
+async function persistStoreToKv(store: LiveSessionStore): Promise<void> {
+  const cfg = kvConfig();
+  if (!cfg) return;
+
+  try {
+    const json = JSON.stringify(toPersistedPayload(store));
+    const url = `${cfg.url}/set/${encodeURIComponent(KV_KEY)}/${encodeURIComponent(json)}`;
+    await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${cfg.token}`,
+      },
+      cache: "no-store",
+    });
+  } catch {
+    // non-fatal in beta mode
+  }
+}
+
+async function persistStoreToFile(store: LiveSessionStore): Promise<void> {
   try {
     fs.mkdirSync(STORE_DIR, { recursive: true });
-    const payload: PersistedLiveSessionStore = {
-      order: [...store.order],
-      sessions: store.order
-        .map((id) => store.byId.get(id))
-        .filter((session): session is GhostTabSession => Boolean(session))
-        .map((session) => serializeSession(session)),
-    };
-
+    const payload = toPersistedPayload(store);
     const tempFile = `${STORE_FILE}.tmp`;
     fs.writeFileSync(tempFile, JSON.stringify(payload, null, 2), "utf8");
     fs.renameSync(tempFile, STORE_FILE);
   } catch {
-    // non-fatal in beta mode: app still works with in-memory state
+    // non-fatal in beta mode
   }
 }
 
-function getStore(): LiveSessionStore {
-  if (!globalThis.__ghostTabLiveSessionStore) {
-    globalThis.__ghostTabLiveSessionStore = loadPersistedStore();
+async function ensureStoreLoaded(): Promise<LiveSessionStore> {
+  if (globalThis.__ghostTabLiveSessionStoreLoaded && globalThis.__ghostTabLiveSessionStore) {
+    return globalThis.__ghostTabLiveSessionStore;
   }
+
+  const fromKv = await loadPersistedStoreFromKv();
+  globalThis.__ghostTabLiveSessionStore = fromKv ?? loadPersistedStoreFromFile();
+  globalThis.__ghostTabLiveSessionStoreLoaded = true;
   return globalThis.__ghostTabLiveSessionStore;
+}
+
+async function persistStore(store: LiveSessionStore): Promise<void> {
+  await Promise.all([persistStoreToKv(store), persistStoreToFile(store)]);
 }
 
 function toSessionStatus(expiresAt: Date, nowMs: number): GhostTabSession["sessionExpiry"]["status"] {
@@ -321,8 +410,8 @@ function isLikelyWalletAddress(value: string) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value.trim());
 }
 
-export function createLiveBetaSession(input: CreateLiveBetaSessionInput): GhostTabSession {
-  const store = getStore();
+export async function createLiveBetaSession(input: CreateLiveBetaSessionInput): Promise<GhostTabSession> {
+  const store = await ensureStoreLoaded();
   const createdAt = Date.now();
   const id = `GT-LIVE-${createdAt}`;
   const recipientId = normalizeRecipientId(input.recipient || `recipient-${createdAt}`);
@@ -400,13 +489,13 @@ export function createLiveBetaSession(input: CreateLiveBetaSessionInput): GhostT
 
   store.byId.set(id, session);
   store.order.unshift(id);
-  persistStore(store);
+  await persistStore(store);
 
   return session;
 }
 
-export function listLiveBetaSessions(nowMs = Date.now()): GhostTabSessionCollection {
-  const store = getStore();
+export async function listLiveBetaSessions(nowMs = Date.now()): Promise<GhostTabSessionCollection> {
+  const store = await ensureStoreLoaded();
   const sessions = store.order
     .map((id) => store.byId.get(id))
     .filter((item): item is GhostTabSession => Boolean(item))
@@ -418,18 +507,21 @@ export function listLiveBetaSessions(nowMs = Date.now()): GhostTabSessionCollect
   };
 }
 
-export function getLiveBetaSessionById(id: string, nowMs = Date.now()): GhostTabSession | null {
-  const store = getStore();
+export async function getLiveBetaSessionById(
+  id: string,
+  nowMs = Date.now(),
+): Promise<GhostTabSession | null> {
+  const store = await ensureStoreLoaded();
   const session = store.byId.get(id);
   return session ? withDerivedState(session, nowMs) : null;
 }
 
-export function getLiveBetaSessionByRecipientId(
+export async function getLiveBetaSessionByRecipientId(
   recipientId: string,
   nowMs = Date.now(),
-): GhostTabSession | null {
+): Promise<GhostTabSession | null> {
   const normalized = normalizeRecipientId(recipientId);
-  const store = getStore();
+  const store = await ensureStoreLoaded();
 
   for (const id of store.order) {
     const session = store.byId.get(id);
@@ -441,7 +533,7 @@ export function getLiveBetaSessionByRecipientId(
   return null;
 }
 
-export function applyLiveBetaRecipientPull(
+export async function applyLiveBetaRecipientPull(
   args: {
     sessionId: string;
     amountUsdc: number;
@@ -449,8 +541,8 @@ export function applyLiveBetaRecipientPull(
     pullSettlement: GhostTabPullSettlement;
     signature?: string;
   },
-): { session: GhostTabSession; event: GhostTabSession["eventTape"][number] } | null {
-  const store = getStore();
+): Promise<{ session: GhostTabSession; event: GhostTabSession["eventTape"][number] } | null> {
+  const store = await ensureStoreLoaded();
   const session = store.byId.get(args.sessionId);
   if (!session) return null;
 
@@ -482,6 +574,6 @@ export function applyLiveBetaRecipientPull(
   };
 
   store.byId.set(session.id, updated);
-  persistStore(store);
+  await persistStore(store);
   return { session: updated, event };
 }

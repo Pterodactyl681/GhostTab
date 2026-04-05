@@ -566,7 +566,7 @@ async function runCreateLiveSessionFlow(
     const deposit = await depositReserveWithRetry(input, steps);
 
     updateStep(steps, "createSessionRecord", "running", "Creating session record...");
-    const created = createLiveBetaSession({
+    const created = await createLiveBetaSession({
       senderWallet: input.senderWallet,
       tabName: input.tabName,
       recipient: input.recipient,
@@ -654,21 +654,22 @@ export function createMagicBlockGhostTabService(): GhostTabService {
   return {
     getModeStatus: () => modeStatus,
     getLiveReadiness: resolveLiveReadiness,
-    listSessions(nowMs?: number): GhostTabSessionCollection {
-      const live = listLiveBetaSessions(nowMs);
+    async listSessions(nowMs?: number): Promise<GhostTabSessionCollection> {
+      const live = await listLiveBetaSessions(nowMs);
       return {
         activeSessions: live.activeSessions,
         historySessions: live.historySessions,
       };
     },
-    getSessionById(id: string, nowMs?: number): GhostTabSession | null {
-      return getLiveBetaSessionById(id, nowMs) ?? fallback.getSessionById(id, nowMs);
+    async getSessionById(id: string, nowMs?: number): Promise<GhostTabSession | null> {
+      const live = await getLiveBetaSessionById(id, nowMs);
+      if (live) return live;
+      return fallback.getSessionById(id, nowMs);
     },
-    getSessionByRecipientId(id: string, nowMs?: number): GhostTabSession | null {
-      return (
-        getLiveBetaSessionByRecipientId(id, nowMs) ??
-        fallback.getSessionByRecipientId(id, nowMs)
-      );
+    async getSessionByRecipientId(id: string, nowMs?: number): Promise<GhostTabSession | null> {
+      const live = await getLiveBetaSessionByRecipientId(id, nowMs);
+      if (live) return live;
+      return fallback.getSessionByRecipientId(id, nowMs);
     },
     async getSessionSignals(session: GhostTabSession): Promise<GhostTabSessionSignals> {
       const mode = session.runtime?.mode ?? "live-beta";
@@ -724,7 +725,7 @@ export function createMagicBlockGhostTabService(): GhostTabService {
       return runCreateLiveSessionFlow(input);
     },
     async recipientPull(input: GhostTabRecipientPullInput): Promise<GhostTabRecipientPullResult> {
-      const session = getLiveBetaSessionById(input.sessionId);
+      const session = await getLiveBetaSessionById(input.sessionId);
       if (!session) {
         return {
           accepted: false,
@@ -816,7 +817,7 @@ export function createMagicBlockGhostTabService(): GhostTabService {
         signature = transfer.signature;
       }
 
-      const updated = applyLiveBetaRecipientPull({
+      const updated = await applyLiveBetaRecipientPull({
         sessionId: session.id,
         amountUsdc: pullAmount,
         pullSettlement: liveTransferExecuted ? "live-transfer" : "live-beta-shell",

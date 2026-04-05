@@ -165,4 +165,4 @@ Ghost Tab in this repo is built to be explicit about status:
 - beta where behavior is hybrid
 - demo fallback when env is incomplete
 
-That honesty is intentional for judging, demo, and safe iteration.
+That honesty is intentional for judging, demos, and safe iteration.

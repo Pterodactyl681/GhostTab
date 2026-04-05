@@ -360,9 +360,10 @@ export function createMockGhostTabService(): GhostTabService {
   return {
     getModeStatus: () => modeStatus,
     getLiveReadiness: async () => resolveMockReadiness(),
-    listSessions,
-    getSessionById,
-    getSessionByRecipientId,
+    listSessions: async (nowMs?: number) => listSessions(nowMs),
+    getSessionById: async (id: string, nowMs?: number) => getSessionById(id, nowMs),
+    getSessionByRecipientId: async (id: string, nowMs?: number) =>
+      getSessionByRecipientId(id, nowMs),
     async getSessionSignals(session: GhostTabSession): Promise<GhostTabSessionSignals> {
       return {
         mode: session.runtime?.mode ?? "demo",

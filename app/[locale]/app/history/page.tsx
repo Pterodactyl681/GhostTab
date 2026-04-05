@@ -17,7 +17,7 @@ export default async function AppHistoryPage({ params }: AppHistoryPageProps) {
   const dictionary = await getDictionary(safeLocale);
   const app = dictionary.app;
   const ghostTabService = getGhostTabService();
-  const { historySessions } = ghostTabService.listSessions(Date.now());
+  const { historySessions } = await ghostTabService.listSessions(Date.now());
 
   return (
     <section className="space-y-4">

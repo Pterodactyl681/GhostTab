@@ -15,9 +15,9 @@ import type {
 export type GhostTabService = {
   getModeStatus(): GhostTabModeStatus;
   getLiveReadiness(): Promise<GhostTabLiveReadiness>;
-  listSessions(nowMs?: number): GhostTabSessionCollection;
-  getSessionById(id: string, nowMs?: number): GhostTabSession | null;
-  getSessionByRecipientId(id: string, nowMs?: number): GhostTabSession | null;
+  listSessions(nowMs?: number): Promise<GhostTabSessionCollection>;
+  getSessionById(id: string, nowMs?: number): Promise<GhostTabSession | null>;
+  getSessionByRecipientId(id: string, nowMs?: number): Promise<GhostTabSession | null>;
   getSessionSignals(session: GhostTabSession): Promise<GhostTabSessionSignals>;
   getDemoPlayback(input: GhostTabDemoPlaybackInput): GhostTabDemoPlaybackState;
   createSession(input: GhostTabCreateSessionInput): Promise<GhostTabCreateSessionResult>;

@@ -60,9 +60,9 @@ function mapSession(session: GhostTabSession): AppSession {
   };
 }
 
-export function getAppShellData(nowMs = Date.now()) {
+export async function getAppShellData(nowMs = Date.now()) {
   const service = getGhostTabService();
-  const sessions = service.listSessions(nowMs);
+  const sessions = await service.listSessions(nowMs);
 
   return {
     activeSessions: sessions.activeSessions.map(mapSession),
@@ -70,14 +70,14 @@ export function getAppShellData(nowMs = Date.now()) {
   };
 }
 
-export function getSessionById(id: string, nowMs = Date.now()) {
+export async function getSessionById(id: string, nowMs = Date.now()) {
   const service = getGhostTabService();
-  const session = service.getSessionById(id, nowMs);
+  const session = await service.getSessionById(id, nowMs);
   return session ? mapSession(session) : null;
 }
 
-export function getSessionByRecipientId(id: string, nowMs = Date.now()) {
+export async function getSessionByRecipientId(id: string, nowMs = Date.now()) {
   const service = getGhostTabService();
-  const session = service.getSessionByRecipientId(id, nowMs);
+  const session = await service.getSessionByRecipientId(id, nowMs);
   return session ? mapSession(session) : null;
 }

@@ -19,7 +19,7 @@ export default async function AppRecipientPage({ params }: AppRecipientPageProps
   const dictionary = await getDictionary(safeLocale);
   const app = dictionary.app;
   const ghostTabService = getGhostTabService();
-  const session = ghostTabService.getSessionByRecipientId(id);
+  const session = await ghostTabService.getSessionByRecipientId(id);
 
   if (!session) {
     notFound();

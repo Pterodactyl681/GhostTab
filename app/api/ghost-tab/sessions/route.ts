@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const nowMs = Date.now();
     const service = getGhostTabService();
-    const collection = service.listSessions(nowMs);
+    const collection = await service.listSessions(nowMs);
 
     return NextResponse.json({
       ok: true,
@@ -25,4 +25,3 @@ export async function GET() {
     );
   }
 }
-
