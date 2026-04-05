@@ -1,0 +1,386 @@
+const en = {
+  seo: {
+    title: "Ghost Tab | Private onchain pull-payments with Rolling Micro-Refill",
+    description:
+      "Ghost Tab is a private onchain spend tab on MagicBlock: hidden reserve, hidden active allowance, native five-minute refills, and automatic clawback on expiry.",
+  },
+  common: {
+    productName: "Ghost Tab",
+    productTagline: "Private onchain pull-payments",
+    skipToContent: "Skip to content",
+    languageLabel: "Switch language",
+    localeNames: {
+      en: "EN",
+      ru: "RU",
+    },
+    nav: {
+      overview: "Overview",
+      lifecycle: "Lifecycle",
+      magicblock: "Why MagicBlock",
+      demo: "Live board",
+    },
+    cta: {
+      openDemo: "Open live board",
+      seeLifecycle: "See lifecycle",
+    },
+    status: {
+      private: "Private",
+    },
+    labels: {
+      sender: "Sender",
+      recipient: "Recipient",
+      cadence: "Refill cadence",
+      nextCrank: "Next crank",
+      expires: "Expiry",
+      reserve: "Private reserve",
+      active: "Active allowance",
+      pulled: "Pulled",
+      budget: "Session budget",
+    },
+    footer: {
+      note: "Powered by Solana + MagicBlock",
+    },
+  },
+  notFound: {
+    eyebrow: "Ghost route",
+    title: "That tab view is gone.",
+    description:
+      "The page you tried to open is not available. Return to the overview to keep exploring the Ghost Tab flow.",
+    cta: "Back to overview",
+  },
+  landing: {
+    eyebrow: "Private pull rail",
+    headline: "Private tabs with rolling refill.",
+    subheadline: "Hidden reserve, live allowance, auto clawback on expiry.",
+    topbarCta: "Open demo",
+    openDemo: "Open demo",
+    createTab: "Create tab",
+    proof: [
+      "Private reserve",
+      "Rolling refill",
+      "Auto clawback",
+      "Built on MagicBlock",
+    ],
+    card: {
+      timeLeft: "Time left",
+      nextRefill: "Refill in",
+      availableNow: "Available now",
+      hiddenReserve: "Hidden reserve",
+      pullNow: "Pull now",
+      openTab: "Open tab",
+      eventTape: "Event tape",
+      reserveMask: "******",
+      demoMode: "Demo mode",
+      resetDemo: "Reset",
+      fastForward: "+30s",
+      noRefill: "--",
+      tapeTypes: {
+        reserve: "RESERVE",
+        open: "OPEN",
+        crank: "REFILL",
+        pull: "PULL",
+        expiry: "EXPIRY",
+        clawback: "CLAWBACK",
+      },
+    },
+  },
+  app: {
+    nav: {
+      app: "Sessions",
+      create: "Create",
+      history: "History",
+    },
+    common: {
+      demoBadge: "Demo mode",
+    },
+    statuses: {
+      live: "Live",
+      expiring: "Expiring",
+      expired: "Expired",
+    },
+    tapeTypes: {
+      reserve: "RESERVE",
+      open: "OPEN",
+      crank: "REFILL",
+      pull: "PULL",
+      expiry: "EXPIRY",
+      clawback: "CLAWBACK",
+    },
+    overview: {
+      title: "Active sessions",
+      inbox: "Inbox",
+      outbox: "Outbox",
+      all: "All",
+      walletHint: "Connect wallet to filter inbox and outbox",
+      empty: "No sessions yet",
+      recipient: "Recipient",
+      status: "Status",
+      nextRefill: "Next refill",
+      availableNow: "Available now",
+      openTab: "Open tab",
+    },
+    create: {
+      title: "Create tab",
+      submit: "Create tab",
+      fields: {
+        tabName: "Tab name",
+        recipient: "Recipient",
+        reserve: "Reserve",
+        refillAmount: "Refill amount",
+        refillInterval: "Refill interval",
+        sessionDuration: "Session duration",
+        maxPull: "Max pull",
+      },
+      preview: {
+        title: "Preview",
+        nextRefill: "Next refill",
+        expiry: "Expiry",
+      },
+    },
+    tab: {
+      session: "Session",
+      sessionId: "Session ID",
+      status: "Status",
+      nextRefill: "Next refill",
+      availableNow: "Available now",
+      hiddenReserve: "Hidden reserve",
+      eventTape: "Event tape",
+      pullRules: "Pull rules",
+      maxPull: "Max pull",
+      interval: "Refill interval",
+      expiry: "Expiry",
+      clawback: "Clawback",
+      privateBalance: "Private balance",
+      connectWallet: "Connect wallet",
+      ownership: "Ownership",
+      ownershipStates: {
+        owner: "Owner",
+        observer: "Observer",
+        unknown: "Unknown",
+      },
+      privateBalanceStates: {
+        available: "Live",
+        partial: "Partial",
+        unavailable: "Unavailable",
+      },
+      modeBadges: {
+        demo: "Demo",
+        "live-beta": "Live-beta",
+        live: "Live",
+      },
+      recipientView: "Recipient view",
+    },
+    recipient: {
+      session: "Recipient session",
+      availableNow: "Available now",
+      nextRefill: "Next refill",
+      timeLeft: "Time left",
+      pullNow: "Pull now",
+      openTab: "Open tab",
+      ready: "Ready",
+      locked: "Locked",
+      connectWallet: "Connect wallet",
+      walletRequired: "Connect recipient wallet",
+      pulling: "Pulling",
+      pullFailed: "Pull failed",
+      pullSuccessLive: "Pull settled on devnet",
+      pullSuccessBeta: "Pull applied in live-beta shell",
+      modeBadges: {
+        demo: "Demo",
+        liveBeta: "Live-beta",
+        live: "Live",
+      },
+    },
+    history: {
+      title: "Session history",
+      reserveUsed: "Reserve used",
+      refillCount: "Refills",
+      clawbackResult: "Clawback",
+      endedAt: "Ended",
+      openTab: "Open tab",
+    },
+  },
+  create: {
+    eyebrow: "Tab composer",
+    title: "Create a private spend tab",
+    subheadline: "Recipient-bound, refill-ready, expiry-safe.",
+    card: {
+      eyebrow: "Session setup",
+      title: "New Ghost Tab",
+      fields: [
+        { label: "Recipient", value: "quiet-ops.sol" },
+        { label: "Session budget", value: "480.00 USDC" },
+        { label: "Refill cadence", value: "Every 5 minutes" },
+        { label: "Expiry", value: "46 minutes" },
+      ],
+      primaryAction: "Open tab on devnet",
+    },
+  },
+  home: {
+    hero: {
+      eyebrow: "Private pull-payments on MagicBlock",
+      title: "Spend tabs that refill themselves.",
+      description:
+        "A sender opens an ephemeral private spend tab for one recipient. The reserve stays hidden, only a narrow active allowance becomes pullable, and a native crank tops it up every five minutes until expiry.",
+      primary: "Open live board",
+      secondary: "See lifecycle",
+      chips: ["Hidden reserve", "Rolling Micro-Refill", "Autonomous clawback"],
+      stats: {
+        cadenceValue: "Every 5 minutes",
+      },
+      panel: {
+        kicker: "Rolling Micro-Refill",
+        reserveLabel: "Private reserve",
+        reserveCaption:
+          "The real budget exists, but it never needs to sit on the obvious public surface.",
+        allowanceLabel: "Active allowance",
+        allowanceCaption:
+          "Only this narrow window is pullable right now, keeping risk intentionally tight.",
+        cadenceLabel: "Native crank cadence",
+        cadenceValue: "Injects a fresh hidden slice on a five-minute rhythm.",
+        observerTitle: "What outside observers see",
+        observerBody:
+          "No full payout event, no public reserve depth, and no clean read on the sender's total intent.",
+      },
+    },
+    proof: {
+      title: "Why this feels different",
+      intro: "Ghost Tab behaves like a controlled operating budget, not a prepaid transfer.",
+      cards: [
+        {
+          title: "Private balances",
+          body: "The reserve can stay off the obvious surface until the session ends or a participant needs to see it.",
+        },
+        {
+          title: "Private transfers",
+          body: "Each pull stays quieter than a single loud payout, which keeps the operating pattern tighter.",
+        },
+        {
+          title: "Scheduled refill",
+          body: "Access grows on a defined cadence instead of dropping the full budget into the recipient's hands at once.",
+        },
+        {
+          title: "Automatic clawback",
+          body: "Unused reserve has a deterministic way home the moment the session expires.",
+        },
+      ],
+    },
+    lifecycle: {
+      eyebrow: "Lifecycle",
+      title: "The spend tab stays narrow on purpose.",
+      description:
+        "Each phase has one job: fund privately, drip access, let the recipient pull from the window, then close and reclaim on schedule.",
+      steps: [
+        {
+          title: "Open private tab",
+          body: "The sender opens a recipient-bound session with hidden reserve, hidden allowance rules, and a clear expiry.",
+        },
+        {
+          title: "Crank refills allowance",
+          body: "A native MagicBlock crank injects a small active allowance every five minutes while the session is alive.",
+        },
+        {
+          title: "Recipient pulls from the window",
+          body: "The recipient can only pull what is live in the allowance window, not the whole reserve.",
+        },
+        {
+          title: "Expiry triggers clawback",
+          body: "When the timer ends, the remaining reserve returns automatically and the session closes cleanly.",
+        },
+      ],
+      rail: {
+        opened: "Session opened",
+        refill: "Allowance refilled",
+        pull: "Recipient pull settled",
+        expiry: "Expiry and clawback",
+      },
+    },
+    magicblock: {
+      eyebrow: "Without MagicBlock",
+      title: "Ghost Tab would feel meaningfully worse.",
+      description:
+        "Privacy, native refill cadence, and autonomous expiry are the point. If those degrade, the product degrades with them.",
+      items: [
+        {
+          title: "PER keeps the tab ephemeral",
+          body: "The spend surface can stay short-lived and purpose-built for a session instead of feeling like a heavy permanent account.",
+          contrast: "Without PER: the tab becomes stickier, louder, and less disposable.",
+        },
+        {
+          title: "Private Payments protects the sensitive path",
+          body: "Reserve and pulls can stay private enough that the sender's full operating pattern does not leak in plain sight.",
+          contrast: "Without private transfers: the product exposes more than it should.",
+        },
+        {
+          title: "Native cranks make refill credible",
+          body: "Rolling Micro-Refill is believable because the schedule belongs to the chain-side primitive, not a fragile offchain bot.",
+          contrast: "Without native cranks: the killer feature turns into trust-me automation.",
+        },
+        {
+          title: "Autonomous expiry closes the loop",
+          body: "Clawback happens on schedule, so budget exposure stays bounded and cleanup does not depend on human attention.",
+          contrast: "Without autonomous expiry: leftover reserve becomes manual ops debt.",
+        },
+      ],
+      boardCta: "See the session board",
+    },
+  },
+  demo: {
+    eyebrow: "Operational demo",
+    title: "A live Ghost Tab session board.",
+    description:
+      "This is the product view judges should understand instantly: reserve depth, current pull window, crank cadence, and the automatic clawback path.",
+    board: {
+      sessionLabel: "Session",
+      statusLive: "Session live",
+      statusPrivate: "Observer view masked",
+      nextRefill: "Next micro-refill",
+      expires: "Session expiry",
+      reserve: "Private reserve",
+      reserveHint: "Visible to participants with session access, not to casual observers.",
+      active: "Active allowance",
+      activeHint: "Only this amount is currently pullable.",
+      refillSize: "Refill size",
+      totalPulled: "Total pulled",
+      progress: "Session burn-down",
+      remaining: "Reserve remaining",
+      logTitle: "Crank and pull log",
+      withdrawalTitle: "Recent recipient pulls",
+      lifecycleTitle: "Lifecycle state",
+      lifecycleBody:
+        "The current state stays constrained by private reserve, crank cadence, and expiry rules rather than manual ops.",
+      noteTitle: "What this proves",
+      noteItems: [
+        "The recipient never gets the whole budget at once.",
+        "Micro-refill is a chain-native behavior, not a cron job promise.",
+        "Unused reserve has a deterministic path back to the sender.",
+      ],
+      eventTypes: {
+        open: "Tab opened",
+        crank: "Crank refill",
+        pull: "Recipient pull",
+        expiry: "Expiry armed",
+      },
+      eventNotes: {
+        open: "Recipient-bound private spend tab initialized with expiry guardrails.",
+        crank: "Native crank injected a fresh allowance slice from the hidden reserve.",
+        pull: "Recipient pulled only from the active window, not the full budget.",
+        expiry: "Unused reserve is already armed to claw back automatically at session end.",
+      },
+      lifecycleItems: [
+        "Reserve armed",
+        "Allowance dripping",
+        "Recipient can pull now",
+        "Clawback queued on expiry",
+      ],
+      participants: {
+        sender: "Northstar Treasury",
+        recipient: "Quiet Ops",
+      },
+      withdrawalLabels: ["Ops retainer", "Support burst", "Urgent moderation shift"],
+      ctaHome: "Back to overview",
+    },
+  },
+};
+
+export default en;
