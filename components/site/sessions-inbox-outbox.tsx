@@ -6,9 +6,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSolanaWallet } from "@/components/site/solana-wallet-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { GhostTabSessionStatus } from "@/lib/domain/ghost-tab";
+import type { GhostTabSessionMode, GhostTabSessionStatus } from "@/lib/domain/ghost-tab";
 
 type SessionRuntime = {
+  mode?: GhostTabSessionMode;
   senderWallet?: string;
   recipientWallet?: string;
 };
@@ -40,10 +41,8 @@ type OverviewLabels = {
   title: string;
   inbox: string;
   outbox: string;
-  all: string;
   walletHint: string;
   empty: string;
-  recipient: string;
   status: string;
   nextRefill: string;
   availableNow: string;
@@ -60,13 +59,28 @@ type SessionsInboxOutboxProps = {
   locale: string;
   labels: OverviewLabels;
   statuses: StatusLabels;
+  modeBadges: {
+    demo: string;
+    "live-beta": string;
+    live: string;
+  };
+  actorLabels: {
+    sender: string;
+    recipient: string;
+  };
 };
 
-type FilterMode = "all" | "inbox" | "outbox";
+type FilterMode = "inbox" | "outbox";
 
 function getStatusVariant(status: GhostTabSessionStatus) {
   if (status === "live") return "cyan";
   if (status === "expiring") return "purple";
+  return "default";
+}
+
+function getModeVariant(mode: GhostTabSessionMode) {
+  if (mode === "live") return "cyan";
+  if (mode === "live-beta") return "purple";
   return "default";
 }
 
@@ -94,11 +108,23 @@ function normalizeWallet(value: string | undefined | null) {
   return value?.trim().toLowerCase() ?? "";
 }
 
-export function SessionsInboxOutbox({ locale, labels, statuses }: SessionsInboxOutboxProps) {
+function shortAddress(value: string) {
+  const trimmed = value.trim();
+  if (trimmed.length <= 12) return trimmed;
+  return `${trimmed.slice(0, 6)}...${trimmed.slice(-6)}`;
+}
+
+export function SessionsInboxOutbox({
+  locale,
+  labels,
+  statuses,
+  modeBadges,
+  actorLabels,
+}: SessionsInboxOutboxProps) {
   const { publicKey } = useSolanaWallet();
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterMode>("all");
+  const [filter, setFilter] = useState<FilterMode>("outbox");
 
   useEffect(() => {
     let active = true;
@@ -135,8 +161,7 @@ export function SessionsInboxOutbox({ locale, labels, statuses }: SessionsInboxO
   const normalizedWallet = normalizeWallet(publicKey);
 
   const filteredSessions = useMemo(() => {
-    if (filter === "all") return sessions;
-    if (!normalizedWallet) return [];
+    if (!normalizedWallet) return sessions;
 
     return sessions.filter((session) => {
       const sender = normalizeWallet(session.runtime?.senderWallet);
@@ -151,7 +176,6 @@ export function SessionsInboxOutbox({ locale, labels, statuses }: SessionsInboxO
   }, [filter, normalizedWallet, sessions]);
 
   const tabs: Array<{ id: FilterMode; label: string }> = [
-    { id: "all", label: labels.all },
     { id: "inbox", label: labels.inbox },
     { id: "outbox", label: labels.outbox },
   ];
@@ -178,15 +202,15 @@ export function SessionsInboxOutbox({ locale, labels, statuses }: SessionsInboxO
         </div>
       </div>
 
-      {!normalizedWallet && filter !== "all" ? (
+      {!normalizedWallet ? (
         <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
           {labels.walletHint}
         </p>
       ) : null}
 
       <div className="surface-panel overflow-hidden">
-        <div className="hidden grid-cols-[1.2fr_auto_auto_auto_auto] gap-3 border-b border-border/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-secondary md:grid md:px-6">
-          <span>{labels.recipient}</span>
+        <div className="hidden grid-cols-[1.4fr_auto_auto_auto_auto] gap-3 border-b border-border/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-secondary md:grid md:px-6">
+          <span>{filter === "inbox" ? actorLabels.sender : actorLabels.recipient}</span>
           <span>{labels.status}</span>
           <span>{labels.nextRefill}</span>
           <span>{labels.availableNow}</span>
@@ -206,17 +230,27 @@ export function SessionsInboxOutbox({ locale, labels, statuses }: SessionsInboxO
             ? new Date(session.refillSchedule.nextRefillAt).getTime() - Date.now()
             : 0;
           const title = session.title?.trim() || session.id;
+          const mode = session.runtime?.mode ?? "demo";
+          const contextValue =
+            filter === "inbox"
+              ? session.runtime?.senderWallet?.trim() || "--"
+              : session.runtime?.recipientWallet?.trim() || session.recipientLabel;
+          const displayContext =
+            filter === "inbox" && contextValue !== "--"
+              ? shortAddress(contextValue)
+              : contextValue;
 
           return (
             <div
               key={session.id}
-              className="flex flex-col gap-3 border-b border-border/[0.08] px-4 py-3.5 last:border-b-0 md:grid md:grid-cols-[1.2fr_auto_auto_auto_auto] md:items-center md:px-6"
+              className="flex flex-col gap-3 border-b border-border/[0.08] px-4 py-3.5 last:border-b-0 md:grid md:grid-cols-[1.4fr_auto_auto_auto_auto] md:items-center md:px-6"
             >
               <div className="min-w-0">
                 <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{title}</p>
-                <p className="mt-1 truncate text-sm text-foreground">{session.recipientLabel}</p>
+                <p className="mt-1 truncate text-sm text-foreground">{displayContext}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2 md:contents">
+                <Badge variant={getModeVariant(mode)}>{modeBadges[mode]}</Badge>
                 <Badge variant={getStatusVariant(session.sessionExpiry.status)}>
                   {statuses[session.sessionExpiry.status]}
                 </Badge>

@@ -153,9 +153,11 @@ export function RecipientPullControls({
         {status ??
           (!canPull
             ? (disabledHint ?? labels.pullFailed)
-            : expectedWallet
-              ? `${labels.walletRequired}: ${shortKey(expectedWallet)}`
-              : labels.walletRequired)}
+            : !walletConnected
+              ? labels.walletRequired
+              : expectedWallet && !walletMatchesRecipient
+                ? `${labels.walletRequired}: ${shortKey(expectedWallet)}`
+                : pullLabel)}
       </p>
     </div>
   );

@@ -76,12 +76,16 @@ export function CreateTabComposer({ locale, defaults, labels }: CreateTabCompose
 
   const [mint, setMint] = useState(defaults.mint);
   const [tabName, setTabName] = useState(defaults.tabName);
-  const [recipient, setRecipient] = useState("");
-  const [reserveUsdc, setReserveUsdc] = useState("");
-  const [refillAmountUsdc, setRefillAmountUsdc] = useState("");
-  const [refillIntervalMinutes, setRefillIntervalMinutes] = useState("");
-  const [sessionDurationMinutes, setSessionDurationMinutes] = useState("");
-  const [maxPullUsdc, setMaxPullUsdc] = useState("");
+  const [recipient, setRecipient] = useState(defaults.recipient);
+  const [reserveUsdc, setReserveUsdc] = useState(String(defaults.reserveUsdc));
+  const [refillAmountUsdc, setRefillAmountUsdc] = useState(String(defaults.refillAmountUsdc));
+  const [refillIntervalMinutes, setRefillIntervalMinutes] = useState(
+    String(defaults.refillIntervalMinutes),
+  );
+  const [sessionDurationMinutes, setSessionDurationMinutes] = useState(
+    String(defaults.sessionDurationMinutes),
+  );
+  const [maxPullUsdc, setMaxPullUsdc] = useState(String(defaults.maxPullUsdc));
 
   const selectedMint =
     MINT_OPTIONS.find((option) => option.value === mint) ?? MINT_OPTIONS[0];

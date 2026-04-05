@@ -14,6 +14,11 @@ export default async function AppOverviewPage({ params }: AppOverviewPageProps) 
       locale={safeLocale}
       labels={dictionary.app.overview}
       statuses={dictionary.app.statuses}
+      modeBadges={dictionary.app.tab.modeBadges}
+      actorLabels={{
+        sender: dictionary.common.labels.sender,
+        recipient: dictionary.common.labels.recipient,
+      }}
     />
   );
 }

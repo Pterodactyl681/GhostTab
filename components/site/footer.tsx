@@ -70,13 +70,15 @@ export function Footer({ dictionary, productName }: FooterProps) {
               <GitHubIcon />
               GitHub
             </a>
-            <span
-              aria-disabled="true"
-              className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-border/[0.14] bg-surface-2/[0.5] px-3 py-1.5 text-[11px] tracking-[0.02em] text-secondary/65"
+            <a
+              href="https://github.com/Pterodactyl681/GhostTab#readme"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border/[0.18] bg-surface-2/[0.72] px-3 py-1.5 text-[11px] tracking-[0.02em] text-secondary transition-colors hover:border-border-strong hover:text-foreground"
             >
               <BookIcon />
               README / Docs
-            </span>
+            </a>
           </div>
           <p className="text-[10px] leading-5">{dictionary.note}</p>
         </div>

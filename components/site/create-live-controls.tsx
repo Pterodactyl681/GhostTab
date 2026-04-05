@@ -47,6 +47,25 @@ function parseNumber(value: FormDataEntryValue | null, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function validateCreatePayload(payload: {
+  recipient: string;
+  mint: string;
+  reserveUsdc: number;
+  refillAmountUsdc: number;
+  refillIntervalMinutes: number;
+  sessionDurationMinutes: number;
+  maxPullUsdc: number;
+}) {
+  if (!payload.recipient.trim()) return "Recipient is required.";
+  if (!payload.mint.trim()) return "Mint is required.";
+  if (payload.reserveUsdc <= 0) return "Reserve must be greater than zero.";
+  if (payload.refillAmountUsdc <= 0) return "Refill amount must be greater than zero.";
+  if (payload.refillIntervalMinutes <= 0) return "Refill interval must be greater than zero.";
+  if (payload.sessionDurationMinutes <= 0) return "Session duration must be greater than zero.";
+  if (payload.maxPullUsdc <= 0) return "Max pull must be greater than zero.";
+  return null;
+}
+
 export function CreateLiveControls({ locale, formId, submitLabel }: CreateLiveControlsProps) {
   const router = useRouter();
   const env = useMemo(() => getGhostTabEnvConfig(), []);
@@ -84,6 +103,13 @@ export function CreateLiveControls({ locale, formId, submitLabel }: CreateLiveCo
       sessionDurationMinutes: parseNumber(formData.get("sessionDurationMinutes"), 0),
       maxPullUsdc: parseNumber(formData.get("maxPullUsdc"), 0),
     };
+
+    const payloadError = validateCreatePayload(payload);
+    if (payloadError) {
+      setStatus(payloadError);
+      setSteps([]);
+      return;
+    }
 
     setPending(true);
     setStatus("Running live-beta create flow...");
