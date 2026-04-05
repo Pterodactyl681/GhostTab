@@ -19,7 +19,6 @@ export default async function LocaleHomePage({ params }: HomePageProps) {
   const safeLocale = isLocale(locale) ? locale : "en";
   const dictionary = await getDictionary(safeLocale);
   const landing = dictionary.landing;
-  const demoHref = `/${safeLocale}/demo`;
   const createHref = `/${safeLocale}/app/create`;
   const shellMax = "max-w-[72rem]";
 
@@ -57,16 +56,8 @@ export default async function LocaleHomePage({ params }: HomePageProps) {
               {landing.subheadline}
             </p>
 
-            <div className="mt-5 flex w-full max-w-[28rem] flex-col items-stretch justify-center gap-2.5 sm:mt-6 sm:flex-row sm:gap-3">
-              <Button asChild size="lg" className="h-11 w-full px-5 text-base sm:h-12 sm:min-w-[12rem] sm:px-6 sm:text-lg">
-                <Link href={demoHref}>{landing.openDemo}</Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="secondary"
-                className="h-11 w-full px-5 text-base sm:h-12 sm:min-w-[12rem] sm:px-6 sm:text-lg"
-              >
+            <div className="mt-5 flex w-full max-w-[16rem] items-stretch justify-center sm:mt-6">
+              <Button asChild size="lg" variant="secondary" className="h-11 w-full px-5 text-base sm:h-12 sm:px-6 sm:text-lg">
                 <Link href={createHref}>{landing.createTab}</Link>
               </Button>
             </div>

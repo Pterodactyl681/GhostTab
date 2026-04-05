@@ -10,6 +10,8 @@ import {
   type SolanaWalletProvider,
 } from "@/lib/wallet/solana-wallet";
 
+const WALLET_DISCONNECT_LOCK_KEY = "ghosttab_wallet_disconnect_lock";
+
 type SolanaWalletContextValue = {
   wallets: SolanaWalletDescriptor[];
   publicKey: string | null;
@@ -22,6 +24,20 @@ type SolanaWalletContextValue = {
 };
 
 const SolanaWalletContext = createContext<SolanaWalletContextValue | null>(null);
+
+function readDisconnectLock() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(WALLET_DISCONNECT_LOCK_KEY) === "1";
+}
+
+function writeDisconnectLock(value: boolean) {
+  if (typeof window === "undefined") return;
+  if (value) {
+    window.localStorage.setItem(WALLET_DISCONNECT_LOCK_KEY, "1");
+    return;
+  }
+  window.localStorage.removeItem(WALLET_DISCONNECT_LOCK_KEY);
+}
 
 function walletNameFromProvider(provider: SolanaWalletProvider): string | null {
   if (provider.isPhantom) return "Phantom";
@@ -54,6 +70,12 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
     const detected = detectSolanaWallets(window);
     setWallets(detected);
 
+    if (readDisconnectLock()) {
+      setPublicKey(null);
+      setConnectedWalletName(null);
+      return;
+    }
+
     const active = detected.find((item) => item.provider.publicKey?.toString());
     if (active) {
       setPublicKey(active.provider.publicKey?.toString() ?? null);
@@ -79,6 +101,7 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
 
     setIsConnecting(true);
     setError(null);
+    writeDisconnectLock(false);
     try {
       const result = await connectWalletProvider(target.provider);
       const key = resolvePublicKey(target.provider, result);
@@ -114,6 +137,7 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
     setPublicKey(null);
     setConnectedWalletName(null);
     setError(null);
+    writeDisconnectLock(true);
     refreshWallets();
   }
 
@@ -128,6 +152,11 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
     }
 
     function onAccountChanged(nextKey: unknown) {
+      if (readDisconnectLock()) {
+        setPublicKey(null);
+        setConnectedWalletName(null);
+        return;
+      }
       if (
         nextKey &&
         typeof nextKey === "object" &&
