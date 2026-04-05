@@ -105,7 +105,7 @@ Open:
 - [http://localhost:3101/en](http://localhost:3101/en)
 - [http://localhost:3101/ru](http://localhost:3101/ru)
 
-## Quick Beta Test (Sender -> Recipient)
+## Quick Beta Test (Sender -> Recipient).
 
 1. Connect sender wallet.
 2. Open `/{locale}/app/create`.
